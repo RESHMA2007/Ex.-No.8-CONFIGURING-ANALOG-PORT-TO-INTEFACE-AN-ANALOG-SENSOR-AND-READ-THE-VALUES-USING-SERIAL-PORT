@@ -1,6 +1,8 @@
+**** 
+
 
 ### Ex. No. :8 CONFIGURING ANALOG PORT TO INTEFACE AN ANALOG SENSOR AND READ THE VALUES USING SERIAL PORT
-## Date: 11.11.2025
+## Date: 21-11-2025
 ###  
 
 ## Aim: 
@@ -150,48 +152,93 @@ This module also includes a potentiometer that will fix the threshold value, & t
 ##  Program 
 
 ```
-
 #include "main.h"
-#include"stdio.h"
-#include<string.h>
-ADC_HandleTypeDef hadc1
-UART_handletypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_USART2_UART_Init(void);
-
 int main(void)
 {
-	uint16_t inp_val;
-	char msg[10];
-	HAL_Init();
-	SystemClock_Config();
-	MX_GPIO_Init();
-	MX_ADC1_Init();
-	MX_USART2_UART_Init();
-while (1)
+   HAL_Init();
+   SystemClock_Config();
+   MX_GPIO_Init();
+  while (1)
+  }
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC _Pol1ForConversion(&hadc1,10000);
-	inp_val=HAL_ADC_GetValue(&hadc1) ;
-	sprintf(msg,'
-	, "%hu\r\n", inp_val);
-	HAL_UART_Transmit (&huart2, (uint8_t*)msg,strlen(msg),10000);
-	HAL_Delay (500);
+	if(GPIO_Pin == GPIO_PIN_9)
+	{
+		HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_11);
+	}
 }
-	
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 84;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
- 
-```
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+}
+
+void Error_Handler(void)
+{
+    __disable_irq();
+  while (1)
+  }
+
+#ifdef  USE_FULL_ASSERT
+void assert_failed(uint8_t *file, uint32_t line)
+{
+}
+#endif
+ ```
+
  
 ## Output  :
 
-![WhatsApp Image 2025-11-11 at 09 31 35_0260e51a](https://github.com/user-attachments/assets/b70ec5d1-52ff-4efd-a149-e3a4c835decf)
+![WhatsApp Image 2025-11-21 at 08 33 16_1f6c12a3](https://github.com/user-attachments/assets/aa072cb8-c121-43a8-9e80-6442bcc63565)
 
 
 ## Result :
-
-The analog sensor was successfully interfaced with the STM32 Nucleo board, and ADC values were read and displayed through the serial port.
-
-
+Interfacing a push button and interrupt genrateion is simulated using proteus
+****
